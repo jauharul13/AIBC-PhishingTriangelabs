@@ -16,13 +16,24 @@ from langchain_core.messages import HumanMessage
 
 # ──────────────────────────────────────────────────────────────────────
 # 1.  Environment & model setup
+#     Reads from Streamlit Cloud secrets first, falls back to .env for
+#     local development.
 # ──────────────────────────────────────────────────────────────────────
 load_dotenv()
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-GROQ_MODEL = os.getenv("GROQ_MODEL", "")
-FALLBACK_GROQ_MODEL = os.getenv("FALLBACK_GROQ_MODEL", "")
-VIRUSTOTAL_API_KEY = os.getenv("VIRUSTOTAL_API_KEY", "")
+
+def _get_secret(key: str, default: str = "") -> str:
+    """Read a secret from st.secrets (Streamlit Cloud) or os.getenv (local)."""
+    try:
+        return st.secrets[key]
+    except (KeyError, FileNotFoundError):
+        return os.getenv(key, default)
+
+
+GROQ_API_KEY = _get_secret("GROQ_API_KEY")
+GROQ_MODEL = _get_secret("GROQ_MODEL")
+FALLBACK_GROQ_MODEL = _get_secret("FALLBACK_GROQ_MODEL")
+VIRUSTOTAL_API_KEY = _get_secret("VIRUSTOTAL_API_KEY")
 
 # ──────────────────────────────────────────────────────────────────────
 # 2.  Streamlit page config & header
